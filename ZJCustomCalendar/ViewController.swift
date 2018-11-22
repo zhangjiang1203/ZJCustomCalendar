@@ -13,8 +13,11 @@ class ViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         let calendarView = ZJCustomCalendar.init(frame: .zero)
-        calendarView.minDate = ZJCalendarTools().getDateFrom(Date(), offSetMonths: -5)
-        calendarView.maxDate = ZJCalendarTools().getDateFrom(Date(), offSetDays: 20)
+//        calendarView.minDate = ZJCalendarTools().getDateFrom(Date(), offSetMonths: -5)
+//        calendarView.maxDate = ZJCalendarTools().getDateFrom(Date(), offSetDays: 20)
+        calendarView.selectedBlcok = { model in
+            print("选中的日期===\(model.dateStr)")
+        }
         self.view.addSubview(calendarView)
         
         calendarView.snp.makeConstraints { (make) in

@@ -16,9 +16,18 @@ class ZJCustomCalendar: UIView {
     fileprivate var myCollection:UICollectionView!
     fileprivate var leftBtn:UIButton!
     fileprivate var rightBtn:UIButton!
+    //MARK:手势
+    fileprivate var leftSwipe:UISwipeGestureRecognizer!
+    fileprivate var rightSwipe:UISwipeGestureRecognizer!
+    
     fileprivate var timeLabel:UILabel!
     fileprivate var calendarTool = ZJCalendarTools()
     fileprivate var selectedDate:Date?
+    ///是否可以滑动日历
+    fileprivate var isScrollCalendar = true
+    ///选中日期的回调
+    var selectedBlcok:((ZJCalendarModel)->Void)?
+    
     ///添加日历数据源
     fileprivate var calendarDataArr:[ZJCalendarModel]?{
         didSet{
@@ -48,13 +57,6 @@ class ZJCustomCalendar: UIView {
             guard let min = minDate else {
                 return
             }
-//            var timeArr = calendarDataArr
-//            timeArr = timeArr!.filter { $0.isCurrentMonth}
-//            //判断最大日期是否在这个数据中
-//            let maxTimeArr = timeArr!.filter { (model) -> Bool in
-//                return Calendar.current.isDate(model.date!, inSameDayAs: min)
-//            }
-//            leftBtn.isEnabled = !(maxTimeArr.count > 0)
             judgeMaxDateAvailable(dateArr: calendarDataArr!, compDate: min, button: leftBtn)
         }
     }
@@ -64,18 +66,9 @@ class ZJCustomCalendar: UIView {
             guard let max = maxDate else {
                 return
             }
-//            var timeArr = calendarDataArr
-//            timeArr = timeArr!.filter { $0.isCurrentMonth}
-//            //判断最大日期是否在这个数据中
-//            let maxTimeArr = timeArr!.filter { (model) -> Bool in
-//                return Calendar.current.isDate(model.date!, inSameDayAs: max)
-//            }
-//            rightBtn.isEnabled = !(maxTimeArr.count > 0)
             judgeMaxDateAvailable(dateArr: calendarDataArr!, compDate: max, button: rightBtn)
-
         }
     }
-    
     
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -86,8 +79,6 @@ class ZJCustomCalendar: UIView {
     }
     
     fileprivate func setUpMyCalendarUI() {
-        let itemW = self.frame.size.width / 7
-
         let topBackView = UIView()
         topBackView.backgroundColor = .white
         self.addSubview(topBackView)
@@ -108,7 +99,7 @@ class ZJCustomCalendar: UIView {
         
         timeLabel = UILabel()
         timeLabel.textAlignment = .center
-        timeLabel.text = Date().stringWithFormat("yyyy月MM日")
+        timeLabel.text = Date().stringWithFormat("yyyy年MM月")
         timeLabel.textColor = normalColor
         timeLabel.font = UIFont.systemFont(ofSize: 16)
         topBackView.addSubview(timeLabel)
@@ -144,35 +135,20 @@ class ZJCustomCalendar: UIView {
         }
         
         let tempArr = ["日","一","二","三","四","五","六"]
-        var tempWeekLabel:UILabel?
         for i in 0..<tempArr.count {
             let infoLabel = UILabel()
+            infoLabel.tag = 100 + i
             infoLabel.text = tempArr[i]
             infoLabel.textAlignment = .center
             infoLabel.textColor = normalColor
             infoLabel.font = UIFont.systemFont(ofSize: 16)
             weekView.addSubview(infoLabel)
-            
-            infoLabel.snp.makeConstraints { (make) in
-                make.size.equalTo(CGSize.init(width: itemW, height: 40))
-                make.top.equalToSuperview()
-                if tempWeekLabel == nil {
-                    make.left.equalToSuperview()
-                }else{
-                    make.width.equalTo(tempWeekLabel!)
-                    make.left.equalTo((tempWeekLabel?.snp.right)!)
-                }
-                if i == (tempArr.count-1){
-                    make.right.equalToSuperview()
-                }
-            }
-            tempWeekLabel = infoLabel
         }
         //collectionView
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
-        layout.itemSize = CGSize.init(width: itemW, height:50)
+        layout.itemSize = CGSize.init(width: 0, height:50)
         myCollection = UICollectionView(frame: .zero, collectionViewLayout: layout)
         myCollection.delegate = self
         myCollection.dataSource = self
@@ -181,17 +157,34 @@ class ZJCustomCalendar: UIView {
         myCollection.showsHorizontalScrollIndicator = false
         myCollection.backgroundColor = .white
         self.addSubview(myCollection)
+        //collectionView添加滑动手势
+        leftSwipe = UISwipeGestureRecognizer.init(target: self, action: #selector(swipteToChangeDate(gesture:)))
+        leftSwipe.direction = .left
+        myCollection.addGestureRecognizer(leftSwipe)
+        
+        rightSwipe = UISwipeGestureRecognizer.init(target: self, action: #selector(swipteToChangeDate(gesture:)))
+        rightSwipe.direction = .right
+        myCollection.addGestureRecognizer(rightSwipe)
         
         myCollection.snp.makeConstraints { (make) in
             make.top.equalTo(weekView.snp.bottom)
-            make.left.right.bottom.equalToSuperview()
+            make.left.right.equalToSuperview()
+            make.height.equalTo(240)
         }
     }
 
+    @objc fileprivate func swipteToChangeDate(gesture:UISwipeGestureRecognizer)  {
+        if(gesture.direction == .left){
+            changeMonthAction(sender: rightBtn)
+        }else if(gesture.direction == .right){
+              changeMonthAction(sender: leftBtn)
+        }
+    }
     
     ///按钮点击设置
-    @objc func changeMonthAction(sender:UIButton) {
+    @objc fileprivate func changeMonthAction(sender:UIButton) {
         selectedDate = calendarTool.getDateFrom(selectedDate!, offSetMonths: sender.tag == 1 ? -1 : 1)
+        addTranstion(isUp: sender.tag != 1)
         //比较当前的日期是否在最大和最小日期之间
         let timeArr = calendarTool.getAllMonthDays(selectedDate!)
         if maxDate != nil {
@@ -201,18 +194,39 @@ class ZJCustomCalendar: UIView {
         if minDate != nil {
             judgeMaxDateAvailable(dateArr: timeArr, compDate: minDate!, button: leftBtn)
         }
-        timeLabel.text = selectedDate!.stringWithFormat("yyyy月MM日")
+        timeLabel.text = selectedDate!.stringWithFormat("yyyy年MM月")
         calendarDataArr = timeArr
     }
     
     ///重新设置itemsize大小
     override func layoutSubviews() {
+        let itemW = self.bounds.size.width / 7
+
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
-        layout.itemSize = CGSize.init(width: self.bounds.size.width/7.0, height:40)
+        layout.itemSize = CGSize.init(width: itemW, height:40)
         myCollection.collectionViewLayout.invalidateLayout()
         myCollection.collectionViewLayout = layout
+        //设置约束
+        var tempWeekLabel:UILabel?
+        for i in 0..<7 {
+            let infoLabel = self.viewWithTag(100+i) as! UILabel
+            infoLabel.snp.makeConstraints { (make) in
+                make.size.equalTo(CGSize.init(width: itemW, height: 40))
+                make.top.equalToSuperview()
+                if tempWeekLabel == nil {
+                    make.left.equalToSuperview()
+                }else{
+                    make.width.equalTo(tempWeekLabel!)
+                    make.left.equalTo((tempWeekLabel?.snp.right)!)
+                }
+                if i == 6 {
+                    make.right.equalToSuperview()
+                }
+            }
+            tempWeekLabel = infoLabel
+        }
     }
     
     
@@ -230,7 +244,36 @@ class ZJCustomCalendar: UIView {
             return Calendar.current.isDate(model.date!, inSameDayAs: compDate)
         }
         //当maxTimeArr有值 就说明最大或者最小日期在这个数组中，禁止按钮
+        if maxTimeArr.count > 0 {
+            if button == leftBtn{
+                myCollection.addGestureRecognizer(leftSwipe)
+                myCollection.removeGestureRecognizer(rightSwipe)
+            }else{
+                myCollection.removeGestureRecognizer(leftSwipe)
+                myCollection.addGestureRecognizer(rightSwipe)
+            }
+            isScrollCalendar = false
+        }else{
+            if isScrollCalendar{
+                myCollection.addGestureRecognizer(leftSwipe)
+                myCollection.addGestureRecognizer(rightSwipe)
+            }
+            isScrollCalendar = true
+        }
         button.isEnabled = !(maxTimeArr.count > 0)
+    }
+    
+    /// 设置动画
+    func addTranstion(isUp:Bool) {
+        //fade，reveal，moveIn，cube，suckEffect，oglFlip，rippleEffect，pageCurl，pageCurl，cameraIrisHollowOpen，cameraIrisHollowClose，pageUnCurl，pageCurl，pageCurl，pageCurl
+
+        let transtion = CATransition()
+        transtion.type = CATransitionType(rawValue: isUp ? "pageCurl" : "pageUnCurl")
+        transtion.duration = 0.4
+        transtion.subtype = CATransitionSubtype.fromRight
+//        transtion.startProgress = 0.4
+//        transtion.endProgress = 0.9
+        myCollection.layer.add(transtion, forKey: nil)
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -252,9 +295,9 @@ extension ZJCustomCalendar:UICollectionViewDelegate,UICollectionViewDataSource{
     
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         collectionView.deselectItem(at: indexPath, animated: true)
-        let model = calendarDataArr![indexPath.row]
-        print(model.dateStr)
+        if selectedBlcok != nil {
+            let model = calendarDataArr![indexPath.row]
+            selectedBlcok!(model)
+        }
     }
-    
-    
 }

@@ -9,7 +9,7 @@
 import UIKit
 import SnapKit
 
-fileprivate let todayColor = UIColor(red: 180/255.0, green: 180/255.0, blue: 180/255.0, alpha: 1)
+fileprivate let notCurrentMonthColor = UIColor(red: 180/255.0, green: 180/255.0, blue: 180/255.0, alpha: 1)
 fileprivate let normalColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
 
 class ZJCalendarCell: UICollectionViewCell {
@@ -39,10 +39,11 @@ class ZJCalendarCell: UICollectionViewCell {
                 dayInfoLabel?.layer.masksToBounds = true
             }else{
                 if !model.isCurrentMonth {
-                    dayInfoLabel?.textColor = todayColor
+                    dayInfoLabel?.textColor = notCurrentMonthColor
                 }else{
                     dayInfoLabel?.textColor = normalColor
                 }
+                dayInfoLabel?.isHidden = !model.isCurrentMonth
                 dayInfoLabel?.backgroundColor = .white
                 dayInfoLabel?.layer.cornerRadius = 0
             }
