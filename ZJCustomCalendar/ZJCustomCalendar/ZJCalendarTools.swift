@@ -112,7 +112,7 @@ class ZJCalendarTools: NSObject {
     ///
     /// - Parameter date: 传入的日期
     /// - Returns: 返回的这个月的日期
-    func getAllMonthDays(_ date:Date) -> [ZJCalendarModel] {
+    func getAllMonthDays(_ date:Date , maxDate:Date? = nil , minDate:Date? = nil) -> [ZJCalendarModel] {
         //本月总天数
         let currentMonthDays = getNumberOfDaysInMonth(date)
         //本月第一天周几

@@ -9,9 +9,10 @@
 import UIKit
 
 fileprivate let cellIden = "CalendarCell"
-fileprivate let normalColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
+fileprivate let normalColor = HEXCOLOR("4a4a4a")
 
 class ZJCustomCalendar: UIView {
+    fileprivate var totalBackView:UIView!
     ///所有视图都是加载视图立即使用没有必要使用懒加载
     fileprivate var myCollection:UICollectionView!
     fileprivate var leftBtn:UIButton!
@@ -32,9 +33,7 @@ class ZJCustomCalendar: UIView {
     fileprivate var calendarDataArr:[ZJCalendarModel]?{
         didSet{
             //设置数据刷新界面
-            guard let _ = calendarDataArr else {
-                return
-            }
+            guard let _ = calendarDataArr else {return}
             myCollection.reloadData()
         }
     }
@@ -42,46 +41,56 @@ class ZJCustomCalendar: UIView {
     /// 设置默认日期
     var setDefaultDate:Date?{
         didSet{
-            guard let date = setDefaultDate else {
-                return
-            }
+            guard let date = setDefaultDate else {return}
             //设置默认显示的日期
             selectedDate = date
             //重新生成数据展示出来
-            calendarDataArr = calendarTool.getAllMonthDays(selectedDate!)
+            let tempArr = calendarTool.getAllMonthDays(selectedDate!)
+            dealMiddleDate(tempArr)
         }
     }
     ///展示最小日期
     var minDate:Date?{
         didSet{
-            guard let min = minDate else {
-                return
-            }
+            guard let min = minDate else {return}
             judgeMaxDateAvailable(dateArr: calendarDataArr!, compDate: min, button: leftBtn)
+            //处理数组
+            dealMiddleDate(calendarDataArr!)
         }
     }
     ///展示的最大日期范围
     var maxDate:Date?{
         didSet{
-            guard let max = maxDate else {
-                return
-            }
+            guard let max = maxDate else {return}
             judgeMaxDateAvailable(dateArr: calendarDataArr!, compDate: max, button: rightBtn)
+            //处理数组
+            dealMiddleDate(calendarDataArr!)
         }
     }
     
     override init(frame: CGRect) {
         super.init(frame: frame)
+        self.backgroundColor = RGBA(0, 0, 0, 0.3)
         setUpMyCalendarUI()
         //初始化数据
         selectedDate = Date()
-        calendarDataArr = calendarTool.getAllMonthDays(selectedDate!)
+        let tempArr = calendarTool.getAllMonthDays(selectedDate!)
+        dealMiddleDate(tempArr)
     }
     
     fileprivate func setUpMyCalendarUI() {
+        
+        totalBackView = UIView()
+        totalBackView.backgroundColor = .white
+        self.addSubview(totalBackView)
+        totalBackView.snp.makeConstraints { (make) in
+            make.top.left.right.equalToSuperview()
+            make.height.equalTo(340)
+        }
+        
         let topBackView = UIView()
-        topBackView.backgroundColor = .white
-        self.addSubview(topBackView)
+        topBackView.backgroundColor = HEXCOLOR("f9f9f9")
+        totalBackView.addSubview(topBackView)
         
         leftBtn = UIButton()
         leftBtn.tag = 1
@@ -106,16 +115,16 @@ class ZJCustomCalendar: UIView {
         //设置上部的视图展示
         topBackView.snp.makeConstraints { (make) in
             make.left.top.right.equalToSuperview()
-            make.height.equalTo(40)
+            make.height.equalTo(50)
         }
         
         leftBtn.snp.makeConstraints { (make) in
-            make.size.equalTo(CGSize(width: 40, height: 40))
+            make.size.equalTo(CGSize(width: 40, height: 50))
             make.left.top.equalToSuperview()
         }
         
         rightBtn.snp.makeConstraints { (make) in
-            make.size.equalTo(CGSize(width: 40, height: 40))
+            make.size.equalTo(CGSize(width: 40, height: 50))
             make.right.top.equalToSuperview()
         }
         timeLabel.snp.makeConstraints { (make) in
@@ -127,11 +136,11 @@ class ZJCustomCalendar: UIView {
         //添加星期
         let weekView = UIView()
         weekView.backgroundColor = .white
-        self.addSubview(weekView)
+        totalBackView.addSubview(weekView)
         weekView.snp.makeConstraints { (make) in
             make.top.equalTo(topBackView.snp.bottom)
             make.left.right.equalToSuperview()
-            make.height.equalTo(40)
+            make.height.equalTo(50)
         }
         
         let tempArr = ["日","一","二","三","四","五","六"]
@@ -156,7 +165,7 @@ class ZJCustomCalendar: UIView {
         myCollection.showsVerticalScrollIndicator = false
         myCollection.showsHorizontalScrollIndicator = false
         myCollection.backgroundColor = .white
-        self.addSubview(myCollection)
+        totalBackView.addSubview(myCollection)
         //collectionView添加滑动手势
         leftSwipe = UISwipeGestureRecognizer.init(target: self, action: #selector(swipteToChangeDate(gesture:)))
         leftSwipe.direction = .left
@@ -168,8 +177,7 @@ class ZJCustomCalendar: UIView {
         
         myCollection.snp.makeConstraints { (make) in
             make.top.equalTo(weekView.snp.bottom)
-            make.left.right.equalToSuperview()
-            make.height.equalTo(240)
+            make.left.right.bottom.equalToSuperview()
         }
     }
 
@@ -195,13 +203,14 @@ class ZJCustomCalendar: UIView {
             judgeMaxDateAvailable(dateArr: timeArr, compDate: minDate!, button: leftBtn)
         }
         timeLabel.text = selectedDate!.stringWithFormat("yyyy年MM月")
-        calendarDataArr = timeArr
+        //处理时间
+        dealMiddleDate(timeArr)
+        
     }
     
     ///重新设置itemsize大小
     override func layoutSubviews() {
         let itemW = self.bounds.size.width / 7
-
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
         layout.minimumInteritemSpacing = 0
@@ -213,7 +222,7 @@ class ZJCustomCalendar: UIView {
         for i in 0..<7 {
             let infoLabel = self.viewWithTag(100+i) as! UILabel
             infoLabel.snp.makeConstraints { (make) in
-                make.size.equalTo(CGSize.init(width: itemW, height: 40))
+                make.size.equalTo(CGSize(width: itemW, height: 50))
                 make.top.equalToSuperview()
                 if tempWeekLabel == nil {
                     make.left.equalToSuperview()
@@ -229,8 +238,43 @@ class ZJCustomCalendar: UIView {
         }
     }
     
+    /// 处理最大值和最小值问题
+    func dealMiddleDate(_ dateArr:[ZJCalendarModel])  {
+        
+        var tempArr = [ZJCalendarModel]()
+        
+        if let max = maxDate,let min = minDate {
+            for var item in dateArr{
+                if item.date! >= min && item.date! <= max {
+                    item.isCanSelected = true
+                }
+                tempArr.append(item)
+            }
+        }else if let max = maxDate {
+            for var item in dateArr{
+                if item.date! <= max {
+                    item.isCanSelected = true
+                }
+                tempArr.append(item)
+            }
+        }else if let min = minDate{
+            for var item in dateArr{
+                if item.date! >= min{
+                    item.isCanSelected = true
+                }
+                tempArr.append(item)
+            }
+        }else{
+            for var item in dateArr{
+                item.isCanSelected = true
+                tempArr.append(item)
+            }
+        }
+        calendarDataArr = tempArr
+    }
     
-    /// 判断最大和最小日期
+    
+    /// 判断最大和最小日期,设置按钮和手势是否可用
     ///
     /// - Parameters:
     ///   - dateArr: 日期数组
@@ -268,12 +312,26 @@ class ZJCustomCalendar: UIView {
         //fade，reveal，moveIn，cube，suckEffect，oglFlip，rippleEffect，pageCurl，pageCurl，cameraIrisHollowOpen，cameraIrisHollowClose，pageUnCurl，pageCurl，pageCurl，pageCurl
 
         let transtion = CATransition()
-        transtion.type = CATransitionType(rawValue: isUp ? "pageCurl" : "pageUnCurl")
+        transtion.type = isUp ? "pageCurl" : "pageUnCurl"//CATransitionType(rawValue: isUp ? "pageCurl" : "pageUnCurl")
         transtion.duration = 0.4
-        transtion.subtype = CATransitionSubtype.fromRight
-//        transtion.startProgress = 0.4
-//        transtion.endProgress = 0.9
+        transtion.subtype = CATransitionSubtype.init(string: "fromRight") as String
         myCollection.layer.add(transtion, forKey: nil)
+    }
+    
+    override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent?) {
+        let touch = ((touches as NSSet).anyObject() as! UITouch)     //进行类  型转化
+        let point = touch.location(in: self)     //获取当前点击位置
+        if point.y > (self.totalBackView.bounds.height) {
+            self.removeSelf()
+        }
+        
+    }
+    
+    fileprivate func removeSelf()  {
+        UIView.animate(withDuration: 0.1, animations: {
+        }) { (com) in
+            self.removeFromSuperview()
+        }
     }
     
     required init?(coder aDecoder: NSCoder) {
@@ -285,6 +343,7 @@ class ZJCustomCalendar: UIView {
 extension ZJCustomCalendar:UICollectionViewDelegate,UICollectionViewDataSource{
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: cellIden, for: indexPath) as! ZJCalendarCell
+        cell.setDefaultDate = setDefaultDate
         cell.calendarModel = calendarDataArr![indexPath.row]
         return cell
     }
@@ -297,7 +356,9 @@ extension ZJCustomCalendar:UICollectionViewDelegate,UICollectionViewDataSource{
         collectionView.deselectItem(at: indexPath, animated: true)
         if selectedBlcok != nil {
             let model = calendarDataArr![indexPath.row]
-            selectedBlcok!(model)
+            if model.isCanSelected {
+                selectedBlcok!(model)
+            }
         }
     }
 }

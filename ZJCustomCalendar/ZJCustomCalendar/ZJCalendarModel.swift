@@ -20,8 +20,8 @@ struct ZJCalendarModel {
     /// 阴历
     var lunar = ""
     
-    /// 是否可以选
-    var isCanSelected = true
+    /// 是否可以选,默认是不可选的
+    var isCanSelected = false
     
     /// 是否是当天
     var isToday = false
