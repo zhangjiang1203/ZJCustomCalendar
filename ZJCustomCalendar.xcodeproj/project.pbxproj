@@ -20,6 +20,8 @@
 		F7320B5C21A7EE65004B2105 /* ZJCalendarModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7320B5621A7EE65004B2105 /* ZJCalendarModel.swift */; };
 		F7320B5D21A7EE65004B2105 /* NSDate+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7320B5721A7EE65004B2105 /* NSDate+Extension.swift */; };
 		F7320B5F21A7EEE7004B2105 /* UIColor+Extension.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7320B5E21A7EEE7004B2105 /* UIColor+Extension.swift */; };
+		F7320B6221A80213004B2105 /* ALYfinal_1.wav in Resources */ = {isa = PBXBuildFile; fileRef = F7320B6021A80213004B2105 /* ALYfinal_1.wav */; };
+		F7320B6321A80213004B2105 /* paybackMoney.wav in Resources */ = {isa = PBXBuildFile; fileRef = F7320B6121A80213004B2105 /* paybackMoney.wav */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +41,8 @@
 		F7320B5621A7EE65004B2105 /* ZJCalendarModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ZJCalendarModel.swift; sourceTree = "<group>"; };
 		F7320B5721A7EE65004B2105 /* NSDate+Extension.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "NSDate+Extension.swift"; sourceTree = "<group>"; };
 		F7320B5E21A7EEE7004B2105 /* UIColor+Extension.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIColor+Extension.swift"; sourceTree = "<group>"; };
+		F7320B6021A80213004B2105 /* ALYfinal_1.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = ALYfinal_1.wav; sourceTree = "<group>"; };
+		F7320B6121A80213004B2105 /* paybackMoney.wav */ = {isa = PBXFileReference; lastKnownFileType = audio.wav; path = paybackMoney.wav; sourceTree = "<group>"; };
 		F97FEF0040F84E91CC9A9894 /* Pods-ZJCustomCalendar.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-ZJCustomCalendar.release.xcconfig"; path = "Pods/Target Support Files/Pods-ZJCustomCalendar/Pods-ZJCustomCalendar.release.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -92,6 +96,8 @@
 		C229410021A59C6600DBDBA6 /* ZJCustomCalendar */ = {
 			isa = PBXGroup;
 			children = (
+				F7320B6021A80213004B2105 /* ALYfinal_1.wav */,
+				F7320B6121A80213004B2105 /* paybackMoney.wav */,
 				F7320B5121A7EE65004B2105 /* ZJCustomCalendar */,
 				C229410121A59C6600DBDBA6 /* AppDelegate.swift */,
 				C229410321A59C6600DBDBA6 /* ViewController.swift */,
@@ -180,6 +186,8 @@
 			files = (
 				C229410C21A59C6800DBDBA6 /* LaunchScreen.storyboard in Resources */,
 				C229410921A59C6800DBDBA6 /* Assets.xcassets in Resources */,
+				F7320B6321A80213004B2105 /* paybackMoney.wav in Resources */,
+				F7320B6221A80213004B2105 /* ALYfinal_1.wav in Resources */,
 				C229410721A59C6600DBDBA6 /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

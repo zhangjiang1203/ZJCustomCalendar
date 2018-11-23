@@ -7,8 +7,13 @@
 //
 
 import UIKit
+import AudioToolbox
+import AVFoundation
 
 class ViewController: UIViewController {
+    //一定要设置为全局的
+    var player:AVAudioPlayer?
+    
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -25,6 +30,14 @@ class ViewController: UIViewController {
             make.top.equalToSuperview().offset(80)
             make.height.equalTo(340)
         }
+        
+        let path = Bundle.main.url(forResource: "paybackMoney.wav", withExtension: nil)
+        player = try! AVAudioPlayer.init(contentsOf: path!)
+        player?.volume = 1
+        player?.numberOfLoops = 0
+        player?.currentTime = 0
+        player?.prepareToPlay()
+        player?.play()
     }
     
     func getAllMonthDays(_ date:Date = Date())  {

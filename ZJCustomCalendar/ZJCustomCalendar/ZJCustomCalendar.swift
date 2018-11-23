@@ -205,7 +205,6 @@ class ZJCustomCalendar: UIView {
         timeLabel.text = selectedDate!.stringWithFormat("yyyy年MM月")
         //处理时间
         dealMiddleDate(timeArr)
-        
     }
     
     ///重新设置itemsize大小
@@ -242,7 +241,6 @@ class ZJCustomCalendar: UIView {
     func dealMiddleDate(_ dateArr:[ZJCalendarModel])  {
         
         var tempArr = [ZJCalendarModel]()
-        
         if let max = maxDate,let min = minDate {
             for var item in dateArr{
                 if item.date! >= min && item.date! <= max {
@@ -272,7 +270,6 @@ class ZJCustomCalendar: UIView {
         }
         calendarDataArr = tempArr
     }
-    
     
     /// 判断最大和最小日期,设置按钮和手势是否可用
     ///
@@ -310,7 +307,6 @@ class ZJCustomCalendar: UIView {
     /// 设置动画
     func addTranstion(isUp:Bool) {
         //fade，reveal，moveIn，cube，suckEffect，oglFlip，rippleEffect，pageCurl，pageCurl，cameraIrisHollowOpen，cameraIrisHollowClose，pageUnCurl，pageCurl，pageCurl，pageCurl
-
         let transtion = CATransition()
         transtion.type = isUp ? "pageCurl" : "pageUnCurl"//CATransitionType(rawValue: isUp ? "pageCurl" : "pageUnCurl")
         transtion.duration = 0.4
@@ -324,7 +320,6 @@ class ZJCustomCalendar: UIView {
         if point.y > (self.totalBackView.bounds.height) {
             self.removeSelf()
         }
-        
     }
     
     fileprivate func removeSelf()  {
@@ -337,7 +332,6 @@ class ZJCustomCalendar: UIView {
     required init?(coder aDecoder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
-    
 }
 
 extension ZJCustomCalendar:UICollectionViewDelegate,UICollectionViewDataSource{
