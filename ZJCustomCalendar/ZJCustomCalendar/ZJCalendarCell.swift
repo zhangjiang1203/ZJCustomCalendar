@@ -11,6 +11,7 @@ import SnapKit
 
 fileprivate let notCurrentMonthColor = HEXCOLOR("9b9b9b")
 fileprivate let normalColor = UIColor(red: 51/255.0, green: 51/255.0, blue: 51/255.0, alpha: 1.0)
+fileprivate let lunarColor = UIColor(red: 156/255.0, green: 156/255.0, blue: 156/255.0, alpha: 1.0)
 
 class ZJCalendarCell: UICollectionViewCell {
     ///显示天数
@@ -26,20 +27,25 @@ class ZJCalendarCell: UICollectionViewCell {
             guard let model = calendarModel else {
                 return
             }
-            lunarInfoLabel?.text = model.lunar
-            lunarInfoLabel?.isHidden = !model.isShowLunar
+            lunarInfoLabel?.text = model.lunarDay == "初一" ? model.lunarMonth : model.lunarDay
+            dayInfoLabel?.isHidden = !model.isCurrentMonth
+            lunarInfoLabel?.isHidden = !model.isCurrentMonth
+
             if !model.isShowLunar {
                 dayInfoLabel!.snp.remakeConstraints { (make) in
                     make.center.equalToSuperview()
                     make.size.equalTo(CGSize(width: 36, height: 36))
                 }
+                lunarInfoLabel?.snp.remakeConstraints({ (make) in
+                    make.center.equalToSuperview()
+                    make.size.equalTo(CGSize.zero)
+                })
             }
 //            优先级排列 1是否可选 2是否今天 3是否本月
             if model.isCanSelected{
-                dayInfoLabel?.isHidden = !model.isCurrentMonth
                 dayInfoLabel?.text = model.isToday ? "今天" :"\(model.day)"
                 dayInfoLabel?.textColor = normalColor
-                dayInfoLabel?.backgroundColor = .white
+                dayInfoLabel?.backgroundColor = .clear
                 if setDefaultDate != nil {
                     if Calendar.current.isDate(model.date!, inSameDayAs: setDefaultDate!) {
                         dayInfoLabel?.textColor = .white
@@ -50,14 +56,13 @@ class ZJCalendarCell: UICollectionViewCell {
                         dayInfoLabel?.textColor = normalColor
                         dayInfoLabel?.layer.cornerRadius = 0
                         dayInfoLabel?.layer.masksToBounds = false
-                        dayInfoLabel?.backgroundColor = .white
+                        dayInfoLabel?.backgroundColor = .clear
                     }
                 }
             }else{
-                dayInfoLabel?.isHidden = !model.isCurrentMonth
                 dayInfoLabel?.text = model.isToday ? "今天" :"\(model.day)"
                 dayInfoLabel?.textColor = notCurrentMonthColor
-                dayInfoLabel?.backgroundColor = .white
+                dayInfoLabel?.backgroundColor = .clear
                 dayInfoLabel?.layer.cornerRadius = 0
                 dayInfoLabel?.layer.masksToBounds = false
             }
@@ -78,19 +83,20 @@ class ZJCalendarCell: UICollectionViewCell {
         
         lunarInfoLabel = UILabel()
         lunarInfoLabel?.textAlignment = .center
-        lunarInfoLabel?.textColor = normalColor
-        lunarInfoLabel?.font = UIFont.systemFont(ofSize: 14)
+        lunarInfoLabel?.textColor = lunarColor
+        lunarInfoLabel?.clipsToBounds = true
+        lunarInfoLabel?.font = UIFont.systemFont(ofSize: 12)
         self.contentView.addSubview(lunarInfoLabel!)
 
         dayInfoLabel!.snp.makeConstraints { (make) in
             make.left.right.equalToSuperview()
-            make.centerY.equalToSuperview().offset(-10)
+            make.centerY.equalToSuperview().offset(-8)
             make.height.equalTo(20)
         }
         lunarInfoLabel!.snp.makeConstraints { (make) in
             make.left.right.equalToSuperview()
-            make.centerY.equalToSuperview().offset(10)
-            make.height.equalTo(20)
+            make.centerY.equalToSuperview().offset(8)
+            make.height.equalTo(16)
         }
     }
     

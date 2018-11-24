@@ -14,6 +14,7 @@ fileprivate let normalColor = HEXCOLOR("4a4a4a")
 class ZJCustomCalendar: UIView {
     fileprivate var totalBackView:UIView!
     ///所有视图都是加载视图立即使用没有必要使用懒加载
+    fileprivate var monthLabel:UILabel!
     fileprivate var myCollection:UICollectionView!
     fileprivate var leftBtn:UIButton!
     fileprivate var rightBtn:UIButton!
@@ -22,13 +23,27 @@ class ZJCustomCalendar: UIView {
     fileprivate var rightSwipe:UISwipeGestureRecognizer!
     
     fileprivate var timeLabel:UILabel!
-    fileprivate var calendarTool = ZJCalendarTools()
     fileprivate var selectedDate:Date?
     ///是否可以滑动日历
     fileprivate var isScrollCalendar = true
     ///选中日期的回调
     var selectedBlcok:((ZJCalendarModel)->Void)?
-    
+    ///是否展示阴历 默认展示
+    var isShowlunar = true{
+        didSet{
+            //刷新数据
+            dealMiddleDate(calendarDataArr!)
+        }
+    }
+    ///是否展示非本月s日历 默认不展示
+    var isShowNotCurrentMonth = true{
+        didSet{
+            //刷新数据
+            dealMiddleDate(calendarDataArr!)
+        }
+    }
+
+
     ///添加日历数据源
     fileprivate var calendarDataArr:[ZJCalendarModel]?{
         didSet{
@@ -45,7 +60,7 @@ class ZJCustomCalendar: UIView {
             //设置默认显示的日期
             selectedDate = date
             //重新生成数据展示出来
-            let tempArr = calendarTool.getAllMonthDays(selectedDate!)
+            let tempArr = ZJCalendarTools.getAllMonthDays(selectedDate!)
             dealMiddleDate(tempArr)
         }
     }
@@ -74,7 +89,7 @@ class ZJCustomCalendar: UIView {
         setUpMyCalendarUI()
         //初始化数据
         selectedDate = Date()
-        let tempArr = calendarTool.getAllMonthDays(selectedDate!)
+        let tempArr = ZJCalendarTools.getAllMonthDays(selectedDate!)
         dealMiddleDate(tempArr)
     }
     
@@ -153,6 +168,7 @@ class ZJCustomCalendar: UIView {
             infoLabel.font = UIFont.systemFont(ofSize: 16)
             weekView.addSubview(infoLabel)
         }
+    
         //collectionView
         let layout = UICollectionViewFlowLayout()
         layout.minimumLineSpacing = 0
@@ -166,6 +182,14 @@ class ZJCustomCalendar: UIView {
         myCollection.showsHorizontalScrollIndicator = false
         myCollection.backgroundColor = .white
         totalBackView.addSubview(myCollection)
+        
+        monthLabel = UILabel()
+        monthLabel.textColor = UIColor.init(red: 210/250.0, green: 210/250.0, blue: 210/250.0, alpha: 100/255.0)
+        monthLabel.text = Date().stringWithFormat("M")
+        monthLabel.textAlignment = .center
+        monthLabel.font = UIFont.systemFont(ofSize: 80)
+        totalBackView.addSubview(monthLabel)
+        
         //collectionView添加滑动手势
         leftSwipe = UISwipeGestureRecognizer.init(target: self, action: #selector(swipteToChangeDate(gesture:)))
         leftSwipe.direction = .left
@@ -179,6 +203,12 @@ class ZJCustomCalendar: UIView {
             make.top.equalTo(weekView.snp.bottom)
             make.left.right.bottom.equalToSuperview()
         }
+        monthLabel.snp.makeConstraints { (make) in
+            make.left.equalToSuperview()
+            make.top.equalToSuperview().offset(100)
+            make.size.equalTo(self.myCollection)
+        }
+        
     }
 
     @objc fileprivate func swipteToChangeDate(gesture:UISwipeGestureRecognizer)  {
@@ -191,10 +221,10 @@ class ZJCustomCalendar: UIView {
     
     ///按钮点击设置
     @objc fileprivate func changeMonthAction(sender:UIButton) {
-        selectedDate = calendarTool.getDateFrom(selectedDate!, offSetMonths: sender.tag == 1 ? -1 : 1)
+        selectedDate = ZJCalendarTools.getDateFrom(selectedDate!, offSetMonths: sender.tag == 1 ? -1 : 1)
         addTranstion(isUp: sender.tag != 1)
         //比较当前的日期是否在最大和最小日期之间
-        let timeArr = calendarTool.getAllMonthDays(selectedDate!)
+        let timeArr = ZJCalendarTools.getAllMonthDays(selectedDate!)
         if maxDate != nil {
             judgeMaxDateAvailable(dateArr: timeArr, compDate: maxDate!, button: rightBtn)
         }
@@ -202,7 +232,6 @@ class ZJCustomCalendar: UIView {
         if minDate != nil {
             judgeMaxDateAvailable(dateArr: timeArr, compDate: minDate!, button: leftBtn)
         }
-        timeLabel.text = selectedDate!.stringWithFormat("yyyy年MM月")
         //处理时间
         dealMiddleDate(timeArr)
     }
@@ -237,9 +266,8 @@ class ZJCustomCalendar: UIView {
         }
     }
     
-    /// 处理最大值和最小值问题
+    /// 处理最大值和最小值,是否展示阴历等问题
     func dealMiddleDate(_ dateArr:[ZJCalendarModel])  {
-        
         var tempArr = [ZJCalendarModel]()
         if let max = maxDate,let min = minDate {
             for var item in dateArr{
@@ -268,6 +296,18 @@ class ZJCustomCalendar: UIView {
                 tempArr.append(item)
             }
         }
+        
+        tempArr = tempArr.map { (model)-> ZJCalendarModel in
+            var lunarModel = model
+            lunarModel.isShowLunar = self.isShowlunar
+            return lunarModel
+        }
+        //修改展示时间
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            self.timeLabel.text = self.selectedDate!.stringWithFormat("yyyy年MM月")
+            self.monthLabel.text = self.selectedDate!.stringWithFormat("M")
+        }
+        
         calendarDataArr = tempArr
     }
     
@@ -350,7 +390,7 @@ extension ZJCustomCalendar:UICollectionViewDelegate,UICollectionViewDataSource{
         collectionView.deselectItem(at: indexPath, animated: true)
         if selectedBlcok != nil {
             let model = calendarDataArr![indexPath.row]
-            if model.isCanSelected {
+            if model.isCurrentMonth {
                 selectedBlcok!(model)
             }
         }

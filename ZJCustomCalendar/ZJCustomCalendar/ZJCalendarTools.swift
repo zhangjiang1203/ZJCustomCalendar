@@ -9,10 +9,19 @@
 import UIKit
 
 class ZJCalendarTools: NSObject {
+    
+    static let `default` = ZJCalendarTools()
+    ///公历
     fileprivate lazy var calendar:Calendar? = {
         var tempCalendar = Calendar(identifier: .gregorian)
         tempCalendar.timeZone = NSTimeZone.system
         return tempCalendar
+    }()
+    
+    fileprivate lazy var chineseCalendar:Calendar? = {
+        var temp = Calendar(identifier: .chinese)
+        temp.timeZone = NSTimeZone.system
+        return temp
     }()
     
     fileprivate lazy var formatter:DateFormatter? = {
@@ -22,6 +31,27 @@ class ZJCalendarTools: NSObject {
         return tempFor
     }()
     
+    fileprivate lazy var lunarZodiocArr:[String] = {
+       let zodiacArr = ["鼠", "牛", "虎", "兔", "龙", "蛇", "马", "羊","猴", "鸡", "狗", "猪",]
+        return zodiacArr
+    }()
+    
+    fileprivate lazy var lunarYearArr:[String] = {
+        let year = ["甲子","乙丑","丙寅","丁卯","戊辰","己巳","庚午","辛未","壬申","癸酉","甲戌","乙亥","丙子","丁丑","戊寅","己卯","庚辰","辛己","壬午","癸未","甲申","乙酉","丙戌","丁亥","戊子","己丑","庚寅","辛卯","壬辰","癸巳","甲午","乙未","丙申","丁酉","戊戌","己亥","庚子","辛丑","壬寅","癸丑","甲辰","乙巳","丙午","丁未","戊申","己酉","庚戌","辛亥","壬子","癸丑","甲寅","乙卯","丙辰","丁巳","戊午","己未","庚申","辛酉","壬戌","癸亥"]
+        return year
+    }()
+    
+    fileprivate lazy var lunarMonthArr:[String] = {
+        let month = ["正月", "二月", "三月", "四月", "五月", "六月", "七月", "八月","九月", "十月", "冬月", "腊月"]
+        return month
+    }()
+    
+    fileprivate lazy var lunarDaysArr:[String] = {
+        let days =
+            ["初一", "初二", "初三", "初四", "初五", "初六", "初七", "初八", "初九", "初十","十一", "十二", "十三", "十四", "十五", "十六", "十七", "十八", "十九", "二十","廿一", "廿二", "廿三", "廿四", "廿五", "廿六", "廿七", "廿八", "廿九", "三十"]
+        return days
+    }()
+    
     override init() {
         super.init()
     }
@@ -29,8 +59,8 @@ class ZJCalendarTools: NSObject {
     /// 获取当前日期的天数
     ///
     /// - Parameter date: 返回当月的天数
-    open func getNumberOfDaysInMonth(_ date:Date) -> Int {
-        let range = self.calendar?.range(of: .day, in: .month, for: date)
+    static public func getNumberOfDaysInMonth(_ date:Date) -> Int {
+        let range = ZJCalendarTools.default.calendar?.range(of: .day, in: .month, for: date)
         return (range?.count)!
     }
     
@@ -38,8 +68,8 @@ class ZJCalendarTools: NSObject {
     ///
     /// - Parameter date: 传入的日期
     /// - Returns: 返回周几
-    open func getWeekdayWithDate(_ date:Date) -> Int{
-        let comp = self.calendar?.component(.weekday, from: date)
+    static public func getWeekdayWithDate(_ date:Date) -> Int{
+        let comp = ZJCalendarTools.default.calendar?.component(.weekday, from: date)
         ///1 周日 2 周一 3 周二 一次类推 1-7 改为 0-6方便计算
         return comp! - 1
     }
@@ -51,10 +81,10 @@ class ZJCalendarTools: NSObject {
     ///   - date: 指定的日期
     ///   - offSetDays: 偏移的天数 负数向前 正数向后
     /// - Returns: 返回偏移后的日期
-    open func getDateFrom(_ date:Date,offSetDays:Int) ->Date{
+    static public func getDateFrom(_ date:Date,offSetDays:Int) ->Date{
         var lastMonthComps = DateComponents()
         lastMonthComps.day = offSetDays
-        return (self.calendar?.date(byAdding: lastMonthComps, to: date))!
+        return (ZJCalendarTools.default.calendar?.date(byAdding: lastMonthComps, to: date))!
     }
     
     /// 根据date获取指定偏移月数的date
@@ -63,11 +93,11 @@ class ZJCalendarTools: NSObject {
     ///   - date: 指定的日期
     ///   - offSetDays: 偏移的月数 负数向前 正数向后
     /// - Returns: 返回偏移后的日期
-    open func getDateFrom(_ date:Date,offSetMonths:Int) ->Date{
+    static public func getDateFrom(_ date:Date,offSetMonths:Int) ->Date{
         
         var lastMonthComps = DateComponents()
         lastMonthComps.month = offSetMonths
-        return (self.calendar?.date(byAdding: lastMonthComps, to: date))!
+        return (ZJCalendarTools.default.calendar?.date(byAdding: lastMonthComps, to: date))!
     }
     
     /// 根据date获取指定偏移年数的date
@@ -76,11 +106,11 @@ class ZJCalendarTools: NSObject {
     ///   - date: 指定的日期
     ///   - offSetDays: 偏移的年数 负数向前 正数向后
     /// - Returns: 返回偏移后的日期
-    open func getDateFrom(_ date:Date,offSetYears:Int) ->Date{
+    static public func getDateFrom(_ date:Date,offSetYears:Int) ->Date{
         
         var lastMonthComps = DateComponents()
         lastMonthComps.year = offSetYears
-        return (self.calendar?.date(byAdding: lastMonthComps, to: date))!
+        return (ZJCalendarTools.default.calendar?.date(byAdding: lastMonthComps, to: date))!
     }
     
     
@@ -88,9 +118,9 @@ class ZJCalendarTools: NSObject {
     ///
     /// - Parameter date: 传入日期
     /// - Returns: 返回这个月第一天周几
-    func convertDateToFirstWeek(_ date:Date) -> Int {
+    static public func convertDateToFirstWeek(_ date:Date) -> Int {
         let firstDayOfMonthDate = getFirstDayOfMonth(date)
-        let firstWeekday = getWeekdayWithDate(firstDayOfMonthDate)
+        let firstWeekday = ZJCalendarTools.getWeekdayWithDate(firstDayOfMonthDate)
         return firstWeekday
     }
     
@@ -99,11 +129,11 @@ class ZJCalendarTools: NSObject {
     ///
     /// - Parameter date: 日期
     /// - Returns: 返回第一天的日期
-    func getFirstDayOfMonth(_ date:Date) -> Date {
-        self.calendar?.firstWeekday = 1
-        var comp = self.calendar?.dateComponents([Calendar.Component.year,Calendar.Component.month,Calendar.Component.day,Calendar.Component.hour,Calendar.Component.minute,Calendar.Component.second,Calendar.Component.weekday], from: date)
+    static public func getFirstDayOfMonth(_ date:Date) -> Date {
+        ZJCalendarTools.default.calendar?.firstWeekday = 1
+        var comp = ZJCalendarTools.default.calendar?.dateComponents([Calendar.Component.year,Calendar.Component.month,Calendar.Component.day,Calendar.Component.hour,Calendar.Component.minute,Calendar.Component.second,Calendar.Component.weekday], from: date)
         comp?.day = 1
-        let firstDayOfMonthDate = self.calendar?.date(from: comp!)
+        let firstDayOfMonthDate = ZJCalendarTools.default.calendar?.date(from: comp!)
         return firstDayOfMonthDate!
 
     }
@@ -112,18 +142,18 @@ class ZJCalendarTools: NSObject {
     ///
     /// - Parameter date: 传入的日期
     /// - Returns: 返回的这个月的日期
-    func getAllMonthDays(_ date:Date , maxDate:Date? = nil , minDate:Date? = nil) -> [ZJCalendarModel] {
+    static public func getAllMonthDays(_ date:Date , maxDate:Date? = nil , minDate:Date? = nil) -> [ZJCalendarModel] {
         //本月总天数
-        let currentMonthDays = getNumberOfDaysInMonth(date)
+        let currentMonthDays = ZJCalendarTools.getNumberOfDaysInMonth(date)
         //本月第一天周几
-        let firstWeekDay = convertDateToFirstWeek(date)
+        let firstWeekDay = ZJCalendarTools.convertDateToFirstWeek(date)
         //本月的第一天
-        let firstDay = getFirstDayOfMonth(date)
+        let firstDay = ZJCalendarTools.getFirstDayOfMonth(date)
         
         //上个月的同一天日期
-        let lastMonthDate = getDateFrom(date, offSetMonths: -1)
+        let lastMonthDate = ZJCalendarTools.getDateFrom(date, offSetMonths: -1)
         //上个月的天数
-        let lastMonthDays = getNumberOfDaysInMonth(lastMonthDate)
+        let lastMonthDays = ZJCalendarTools.getNumberOfDaysInMonth(lastMonthDate)
         //这个月要保留几天上个月的位置
         
         var rang = [Int]()
@@ -136,13 +166,13 @@ class ZJCalendarTools: NSObject {
         //获取上月要显示的日期
         if rang.count > 0 {
             for i in 1...rang.count {
-                let tempDate = getDateFrom(firstDay, offSetDays: -i)
+                let tempDate = ZJCalendarTools.getDateFrom(firstDay, offSetDays: -i)
                 timeArr.insert(tempDate, at: 0)
             }
         }
         //获取本月的所有日期
         for i in 0..<currentMonthDays{
-            let tempDate = getDateFrom(firstDay, offSetDays: i)
+            let tempDate = ZJCalendarTools.getDateFrom(firstDay, offSetDays: i)
             timeArr.append(tempDate)
         }
         
@@ -150,7 +180,7 @@ class ZJCalendarTools: NSObject {
         let futureDays = 42 - (rang.count + currentMonthDays)
         let futureFirstDate = timeArr.last!
         for i in 1...futureDays{
-            let tempDate = getDateFrom(futureFirstDate, offSetDays: i)
+            let tempDate = ZJCalendarTools.getDateFrom(futureFirstDate, offSetDays: i)
             timeArr.append(tempDate)
         }
         //获取的数据，模型转化
@@ -163,11 +193,16 @@ class ZJCalendarTools: NSObject {
             model.month = time.month!
             model.day = time.day!
             //判断是否是当天
-            if calendar!.isDate(time, inSameDayAs: Date()){
+            if ZJCalendarTools.default.calendar!.isDate(time, inSameDayAs: Date()){
                 model.isToday = true
             }
             //是否是本月
             model.isCurrentMonth = model.month == date.month!
+            let localComp =  ZJCalendarTools.default.chineseCalendar!.dateComponents([.year,.month,.day,.hour,.minute,.second], from: time)
+            model.lunarYear = ZJCalendarTools.default.lunarYearArr[localComp.year!-1]
+            model.lunarMonth = ZJCalendarTools.default.lunarMonthArr[localComp.month!-1]
+            model.lunarDay = ZJCalendarTools.default.lunarDaysArr[localComp.day!-1]
+            model.zodiac = ZJCalendarTools.default.lunarZodiocArr[(time.year! - 1900) % 12]
             modelArr.append(model)
         }
         return modelArr
