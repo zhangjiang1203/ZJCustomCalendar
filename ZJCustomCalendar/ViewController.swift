@@ -20,6 +20,7 @@ class ViewController: UIViewController {
         let calendarView = ZJCustomCalendar(frame: .zero)
 //        calendarView.minDate = ZJCalendarTools.getDateFrom(Date(), offSetMonths: -5)
 //        calendarView.maxDate = ZJCalendarTools.getDateFrom(Date(), offSetDays: 20)
+        calendarView.isShowlunar = false
         calendarView.selectedBlcok = { model in
             print("选中的日期===\(model.dateStr)")
         }
